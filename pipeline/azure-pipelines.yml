@@ -1,0 +1,39 @@
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: SonarQubePrepare@5
+  displayName: "Pull Request :: Sonar Qube Prepare"
+  inputs:
+    SonarQube: 'Galgo-test-sonar'
+    scannerMode: 'Other'
+    extraProperties: |
+      # Additional properties that will be passed to the scanner,
+      # Put one key=value per line, example:
+      # sonar.exclusions=**/*.bin
+      sonar.projectKey=galgopro_test-sonar-pipe
+
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: true
+    sqMavenPluginVersionChoice: 'latest'
+
+
+- task: SonarQubeAnalyze@5
+
+- task: SonarQubePublish@5
+  name: "SonarQubePublish"
+  displayName: "Pull Request :: Sonar Qube Publish"
+  inputs:
+    pollingTimeoutSec: '300'
